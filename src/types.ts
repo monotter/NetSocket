@@ -12,7 +12,8 @@ export type ServeOptions = ServeInit & {
 }
 export type NetSocketOptions = {
     Timeout?: number
-    serve?: ServeOptions | number
+    serve?: ServeOptions | number,
+    idPrefix?: string | false
 }
 export type HostOptions = {
     hostname: string

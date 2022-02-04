@@ -46,7 +46,7 @@ export class SocketInstance {
                 this._status = 'connected'
                 const Timeout = setTimeout(() => {
                     this.#emit('disconnect', this)
-                }, this._NetSocket.Timeout)
+                }, this._NetSocket.options.Timeout)
                 this.on('reconnect', () => {
                     clearTimeout(Timeout)
                 })
@@ -124,15 +124,16 @@ export class SocketInstance {
 export class NetSocket {
     public readonly _sockets: Map<string, SocketInstance>
     public readonly _listeners: Map<string, Set<callback>>
-    public readonly Timeout: number
+    public readonly options: NetSocketOptions
     constructor(options?: NetSocketOptions) {
         this._sockets = new Map()
         this._listeners = new Map()
         const _options: NetSocketOptions = {
             Timeout: 60000,
+            idPrefix: 'socketid',
             ...options
         }
-        this.Timeout = _options.Timeout!
+        this.options = _options
         if (_options.serve) {
             const _serve: ServeOptions = typeof _options.serve === 'number' ? { port: _options.serve } : _options.serve
             if (_serve.tls) {
@@ -162,6 +163,9 @@ export class NetSocket {
         let _uuid = uuid
         let exist = true
         if (!v4.validate(_uuid)) { _uuid = crypto.randomUUID(); exist = false }
+        if (this.options.idPrefix) {
+            headers.set(this.options.idPrefix, _uuid)
+        }
         const existSocket = this._sockets.get(_uuid)
         if (existSocket) {
             existSocket._socket.removeEventListener('open', existSocket._events?.open!)
